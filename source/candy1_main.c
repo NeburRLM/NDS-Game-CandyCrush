@@ -103,4 +103,3 @@ int main(void)
 	do { swiWaitForVBlank(); } while(1);	// bucle infinito
 	return(0);
 }
-

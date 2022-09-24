@@ -31,6 +31,7 @@ extern char mapas[MAXLEVEL][ROWS][COLUMNS];	// mapas de configuración
 extern char mat_mar[ROWS][COLUMNS];		// matriz de marcas
 extern char pos_sug[6];					// posiciones sugerencia de combinación
 extern void escribe_matriz(char mat[][COLUMNS]);
+extern void escribe_matriz_debug(char mat[][COLUMNS]);
 extern int contar_gelatinas(char mat[][COLUMNS]);
 extern void retardo(int dsecs);
 extern int procesar_touchscreen(char mat[][COLUMNS],

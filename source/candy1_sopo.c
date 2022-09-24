@@ -28,7 +28,7 @@ int num_pun = 0;				// número de puntuaciones
 	de a la casilla superior izquierda;
 	además, se usa la secuencia escape para cambiar el color del texto
 	(\x1b['color'm), donde 'color' es un código de color de la librería NDS */
-void escribe_matriz(char mat[][COLUMNS])
+void escribe_matriz_h(char mat[][COLUMNS], int debug)
 {
 	int i, j, value, color;
 
@@ -36,28 +36,48 @@ void escribe_matriz(char mat[][COLUMNS])
 	{
 		for (j = 0; j < COLUMNS; j++)	// para todas las columnas
 		{
-			value = mat[i][j];		// obtiene el valor del elemento (i,j)
-			if (value != 15)
-			{
-				if (value == 7)
-					color = 39;				// el color del bloque
-				else if (value > 16)
-					color = 38;				// el color de la gelatina doble
-				else if (value > 8)
-					color = 37;				// el color de la gelatina simple
-				else
-					color = 40+value;		// el color normal
-				printf("\x1b[%dm", color);
-				if (value == 255)
-					printf("\x1b[%d;%dH_ ",(i*2+DFIL),(j*2+1));
-				else
-					printf("\x1b[%d;%dH%d ",(i*2+DFIL),(j*2+1),(value % 8));
-			}
-			else printf("\x1b[%d;%dH  ",(i*2+DFIL),(j*2+1));
+			value = mat[i][j];				// obtiene el valor del elemento (i,j)
+			
+			if ((value == 0) || ((value & 7) == 7))
+				color = 39;						// color del "hueco", bloc s?lid o buit (light white)
+			else if (value >= 16)
+				color = 38;						// el color de la gelatina doble (dark grey)
+			else if (value >= 8)
+				color = 37;						// el color de la gelatina simple (light grey)
+			else
+				color = 40 + value;				// el color normal (brillant)
+			printf("\x1b[%dm", color);
+			
+			printf("\x1b[%d;%dH", (i*2+DFIL), (j*2+1));	// posicionar cursor
+			
+			if (value == 255)
+				printf("_ ");					// sugerir
+			else if ((value == 7) && debug)
+				printf("# ");					// bloc s?lid en mode debug
+			else if ((value == 15) && debug)
+				printf(": ");					// hueco en mode debug
+			else if (value != 15)
+				printf("%d ", (value & 7));		// valor en mode normal
+			else
+				printf(" ");					// hueco en mode normal
 		}
 	}
 }
 
+/* escribe_matriz(*mat): llama a escribe_matriz_h() con visualitzaci?n normal
+*/
+void escribe_matriz(char mat[][COLUMNS])
+{
+	escribe_matriz_h(mat, 0);
+}
+
+/* escribe_matriz_debug(*mat): llama a escribe_matriz_h() con visualitzaci?n
+	para depuraci?n de errores
+*/
+void escribe_matriz_debug(char mat[][COLUMNS])
+{
+	escribe_matriz_h(mat, 1);
+}
 
 /* contar_gelatinas(*mat): calcula cuantas gelatinas quedan en la matriz de
 	juego, contando 1 para gelatines simples y 2 para gelatinas dobles */

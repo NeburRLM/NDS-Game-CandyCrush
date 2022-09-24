@@ -9,7 +9,7 @@
 
 .include "../include/candy1_incl.i"
 
-
+MASK_VALOR_SENSE_GEL = 0b00111
 
 @;-- .text. código de las rutinas ---
 .text	
@@ -39,30 +39,79 @@
 @;		R0 = número de repeticiones detectadas (mínimo 1)
 	.global cuenta_repeticiones
 cuenta_repeticiones:
-		push {r1-r2, r4-r6, lr}
+		push {r1-r12,lr}
 		
-		mov r5, #COLUMNS
-		mla r6, r1, r5, r2
-		add r4, r0, r6			@;R4 apunta al elemento (f,c) de 'mat'
-		ldrb r5, [r4]
-		and r5, #7				@;R5 es el valor filtrado (sin marcas de gel.)
-		mov r0, #1				@;R0 = número de repeticiones
-		cmp r3, #0
-		beq .Lconrep_este
-		cmp r3, #1
-		beq .Lconrep_sur
-		cmp r3, #2
-		beq .Lconrep_oeste
-		cmp r3, #3
-		beq .Lconrep_norte
-		b .Lconrep_fin
+		mov r4, #1 									@;r4 contindrà num_repeticions, inicialment =1
+		mov r5, #COLUMNS 							@;columnas (carreguem constant com a valor inmediat ja que es menor que 12 bits)
+		mov r6, #ROWS 								@;filas (carreguem constant com a valor inmediat ja que es menor que 12 bits)
+			
+		mla r9, r1, r5, r2
+		ldrb r8, [r0,r9]
+		and r10, r8, #MASK_VALOR_SENSE_GEL			@;apliquem màscara per quedar-nos amb els 3 bits de menor pes
+		cmp r3, #1 									@;analitzem la orientació
+		bgt .Nord_o_Oest 							@;si r3>1 salta (ja que podria ser 2->oest o 3->nord)
+		beq .Lconrep_sur 							@;si r3==1, salta a Sud
 		
-
-@; ATENCIÓN: FALTA CÓDIGO PARA CONTAR LAS REPETICIONES EN CADA ORIENTACIÓN
+		.Lconrep_este: 								@;r3 no és ni 1 ni és més gran que 1, per tant 0 (Est)
+		sub r7, r5, #1 								@;r7=COLUMNS-1 (per a comparar dins de la posició màxima de la matriu)
+		cmp r2, r7 									@;comparem la columna actual(r2) amb el màxim de columnes de la matriu(r5-1)
+		bge .Lconrep_fin 							@;si r2>=r7 (si la columna actual es superior o igual a la màxima), acaba el programa
+		add r2,#1									@;si segueix dins de les dimensions de la matriu, s'incrementa una columna per seguir amb el recorregut Est
+		mla r9,r1,r5,r2 							@;obtenim la nova posició segons la nova columna a estudiar
+		ldrb r8, [r0,r9]							@;obtenim el valor de la nova posició calculada
+		and r8, r8, #MASK_VALOR_SENSE_GEL			@;apliquem màscara per quedarnos amb els 3 bits de menor pes
+		cmp r8,r10									@;comparem el valor recent amb el inicial (aplicada ja la màscara)
+		bne .Lconrep_fin							@;si son diferents, s'acaba el recorregut i el programa
+		add r4,#1									@;si els dos valors son iguals, s'incrementa el número de repeticions consecutius 
+		b .Lconrep_este								@;torna a començar el bucle del recorregut
+		
+		.Lconrep_sur: 								@;r3 és 1
+		sub r7, r6, #1 								@;r7=ROWS-1 (per a comparar dins de la posició màxima de la matriu)
+		cmp r1, r7 									@;comparem la fila actual(r1) amb el màxim de files de la matriu(r6-1)
+		bge .Lconrep_fin 							@;si r1>=r7 (si la fila actual es superior o igual a la màxima), acaba el programa
+		add r1,#1									@;si segueix dins de les dimensions de la matriu, s'incrementa una fila per seguir amb el recorregut Sud
+		mla r9,r1,r5,r2 							@;obtenim la nova posició segons la nova fila a estudiar
+		ldrb r8, [r0,r9]							@;obtenim el valor de la nova posició calculada
+		and r8, r8, #MASK_VALOR_SENSE_GEL			@;apliquem màscara per quedarnos amb els 3 bits de menor pes
+		cmp r8,r10									@;comparem el valor recent amb el inicial (aplicada ja la màscara)
+		bne .Lconrep_fin							@;si son diferents, s'acaba el recorregut i el programa
+		add r4,#1									@;si els dos valors son iguals, s'incrementa el número de repeticions consecutius
+		b .Lconrep_sur								@;torna a començar el bucle del recorregut
+		
+		.Nord_o_Oest:								@;salt a estudiar possible nord o oest
+		cmp r3, #2 									@;comparem la orientació amb el valor 2
+		beq .Lconrep_oeste							@;si r3==2, té orientació de oest, sinò serà nord(r3==3)
+		
+		.Lconrep_norte: 							@;si no es oest, serà nord(r3==3)
+		cmp r1, #0 									@;comparem la fila actual(r1) amb la posició mínima de la matriu(#0)
+		ble .Lconrep_fin							@;si r1<=0 (si la fila actual es inferior o igual a la mínima), acaba el programa
+		sub r1,#1									@;si segueix dins de les dimensions de la matriu, restem una fila per fer el recorregut NORD
+		mla r9,r1,r5,r2 							@;obtenim la nova posició segons la nova fila a estudiar
+		ldrb r8, [r0,r9]							@;obtenim el valor de la nova posició calculada
+		and r8, r8, #MASK_VALOR_SENSE_GEL			@;apliquem màscara per quedarnos amb els 3 bits de menor pes
+		cmp r8,r10									@;comparem el valor recent amb el inicial (aplicada ja la màscara)
+		bne .Lconrep_fin							@;si son diferents, s'acaba el recorregut i el programa
+		add r4,#1									@;si els dos valors son iguals, s'incrementa el número de repeticions consecutius
+		b .Lconrep_norte							@;torna a començar el bucle del recorregut
+			
+		.Lconrep_oeste:								@;r3 és 2 (oest)
+		cmp r2, #0 									@;comparem la columna actual(r2) amb la posició mínima de la matriu(#0)
+		ble .Lconrep_fin 							@;si r2<=0 (si la columna actual es inferior o igual a la mínima), acaba el programa
+		sub r2,#1 									@;si segueix dins de les dimensions de la matriu, restem una columna per fer el recorregut OEST
+		mla r9,r1,r5,r2 							@;obtenim la nova posició segons la nova columna a estudiar
+		ldrb r8, [r0,r9]							@;obtenim el valor de la nova posició calculada
+		and r8, r8, #MASK_VALOR_SENSE_GEL			@;apliquem màscara per quedarnos amb els 3 bits de menor pes
+		cmp r8,r10									@;comparem el valor recent amb el inicial (aplicada ja la màscara)
+		bne .Lconrep_fin							@;si son diferents, s'acaba el recorregut i el programa
+		add r4,#1									@;si els dos valors son iguals, s'incrementa el número de repeticions consecutius
+		b .Lconrep_oeste							@;torna a començar el bucle del recorregut
+		
+			
+		.Lconrep_fin:								@;acaba el programa
+		mov r0, r4
 
 		
-		pop {r1-r2, r4-r6, pc}
-
+		pop {r1-r12, pc}
 
 
 @;TAREA 1F;
