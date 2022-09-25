@@ -130,10 +130,25 @@ cuenta_repeticiones:
 @;				queden movimientos pendientes. 
 	.global baja_elementos
 baja_elementos:
-		push {lr}
+		push {r4,lr}
 		
+		mov r4, r0 									@;direcció base de la matriu en r4 (per a les rutines auxiliars)
+		mov r1, #0 									@;r1=0 -> cap moviment inicial(registre per anotar si hi ha o no moviment)
+
+        bl baja_verticales 							@;mirem si en baja_verticales es produeix un moviment
+      
+        mov r1, r0 									@;posem en r1 el valor de anotació de moviments que retorna la funció baja_verticales en r0
+
+        cmp r1, #0									@;comprovem si s'ha produït algun moviment
+        bne .Lfinal_baja_elementos 					@;si hi ha canvis (r1!=0) llavors sortim de baja_elementos, si no hi ha canvis (r1==0) 
+										 
+		bl baja_laterales 							@;si no hi ha canvis, continuarà la execució a la rutina baja_laterales
+        mov r1, r0 									@;posem en r1 el valor de anotació de moviments que retorna la funció baja_laterales en r0
+
+		.Lfinal_baja_elementos:				
+		strb r1, [r0] 								@;guardem en r0 el contingut del registre r1 (anotació de moviment)
 		
-		pop {pc}
+		pop {r4,pc}
 
 
 
