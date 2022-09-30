@@ -25,7 +25,7 @@ int level = 0;					// nivel del juego (nivel inicial = 0)
 int points;						// contador global de puntos
 int movements;					// número de movimientos restantes
 int gelees;						// número de gelatinas restantes
-
+char marca[ROWS][COLUMNS];		// matriu de marques
 
 
 /* actualizar_contadores(code): actualiza los contadores que se indican con el
@@ -46,7 +46,7 @@ void actualizar_contadores(int code)
 
 
 /* Programa principal: control general del juego */
-int main(void)
+/*int main(void)
 {
 	int lapse = 0;				// contador de tiempo sin actividad del usuario
 	int change = 0;				// =1 indica que ha habido cambios en la matriz
@@ -207,5 +207,44 @@ int main(void)
 	} while (1);				// bucle infinito
 	
 	return(0);					// nunca retornará del main
+}*/
+int main(void)
+{
+	consoleDemoInit();			// inicialización de pantalla de texto
+	printf("candyNDS (prueba tarea 1C)\n");
+	printf("\x1b[38m\x1b[1;0H  nivel:");
+	actualizar_contadores(1);
+
+	do							// bucle principal de pruebas
+	{
+		copia_mapa(matrix, level);		// sustituye a inicializa_matriz()
+		escribe_matriz_debug(matrix);
+		if (hay_secuencia(matrix)){			// si hay secuencias
+			printf("\x1b[39m\x1b[3;0H hay secuencia: SI");
+			do
+			{	swiWaitForVBlank();
+				scanKeys();										// esperar pulsación tecla 'START'
+			} while (!(keysHeld() & (KEY_START)));
+			elimina_secuencias(matrix, marca);
+			escribe_matriz_debug(matrix);
+		}else
+			printf("\x1b[39m\x1b[3;0H hay secuencia: NO");
+		retardo(5);
+		printf("\x1b[38m\x1b[3;19H (pulse A/B)");
+		do
+		{	swiWaitForVBlank();
+			scanKeys();					// esperar pulsación tecla 'A' o 'B'
+		} while (!(keysHeld() & (KEY_A | KEY_B)));
+		printf("\x1b[3;0H                               ");
+		retardo(5);
+		if (keysHeld() & KEY_A)			// si pulsa 'A',
+		{								// pasa a siguiente nivel
+			level = (level + 1) % MAXLEVEL;
+			actualizar_contadores(1);
+		}
+	} while (1);
+	return(0);
 }
+
+
 
