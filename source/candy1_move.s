@@ -177,7 +177,7 @@ baja_verticales:
 		.for_1:										@;primer bucle
 		cmp r1, #0									
 		bge .entra_for_1							@;mentre r1 (columna) sigui >=0 (dins dimensió matriu)
-		b .final_baja_laterales						@;si r1 és més petit que 0, s'acaba el recorregut i , per tant la rutina
+		b .final_baja_verticales					@;si r1 és més petit que 0, s'acaba el recorregut i , per tant la rutina
 		
 		.entra_for_1:
 		mov r5, #0 									@;posició de la fila més alta (r5=0) a partir de la columna actual (r1)
@@ -311,9 +311,8 @@ baja_verticales:
 		sub r1, r1, #1								@;i comencem de nou mirant si el valor de la seva posició superior es 15
 		b .for_1
 
-		.final_baja_laterales:						@;surt de la rutina de baja_laterales, passant per r0 l'estat de moviments(0 o 1)
-		
-		
+		.final_baja_verticales:						@;surt de la rutina de baja_laterales, passant per r0 l'estat de moviments(0 o 1)
+				
 		pop {r1-r12, pc}
 
 
@@ -326,10 +325,232 @@ baja_verticales:
 @;	Resultado:
 @;		R0 = 1 indica que se ha realizado algún movimiento. 
 baja_laterales:
-		push {lr}
+		push {r1-r12, lr}
 		
+		mov r0, #0									@;r0=0 cap moviment ->registre per saber si hi ha o no moviments
+		mov r1, #ROWS								@;filas (carreguem constant com a valor inmediat ja que es menor que 12 bits)	
+		sub r2, r1, #1								@;ems situem a l'ultima fila (dins dimensions de la matriu-fila actual) per recórrer la matriu en sentit invers
+		mov r3, #COLUMNS							@;columnas (carreguem constant com a valor inmediat ja que es menor que 12 bits)
+			
+		.for_1_bl:									@;primer bucle baja laterales
+		cmp r2, #0										
+		bge .entra_for_1_bl							@;mentre r2 (fila actual) sigui >=0 (dins dimensió matriu) 
+		b .final_bl									@;si r2 és més petit que 0, s'acaba el recorregut i , per tant la rutina
 		
-		pop {pc}
+		.entra_for_1_bl:							@;si la fila actual està dins de les dimensions la matriu
+		sub r5, r3, #1								@;ens situem a l'última columna (columna actual r5) per fer el recorregut invers de cada fila. Quan columna -1, r5=COLUMNS-1
+		
+		.for_2_bl:		
+		mov r6, #0									@;superior dreta
+		mov r7, #0									@;superior esquerra	
+		cmp r5, #0
+		bge .entra_for_2_bl							@;mentre r5 (columna actual) sigui >=0 (dins dimensió matriu)
+		b .disminuir_i_for_1_bl						@;si no, saltem a mirar la següent fila
+		
+		.entra_for_2_bl:
+		@;PRIMER IF
+		mla r8, r2, r3, r5							@;ens situem a la posició actual de r2,r5
+		ldrb r9, [r4, r8]							@;obtenim valor de la posició anterior calculada
+		and r9, r9, #VALOR							@;apliquem màscara al valor per quedar-nos amb el seu valor sense gelatina
+		cmp r9, #0									@;veiem si es una pocisio buida	
+		beq .condicio_1_if_1						@;si el valor sense gelatina es == 0, saltar 
+		b .disminuir_j_for_2_bl						@;si no es == 0 (valor buit) saltem per passar a la columna del costat esquerra
+		
+		.condicio_1_if_1:							@;si trobem un valor =0, mirem el valor que té en la posició superior a la que es troba aquest valor =0
+		sub r12, r2, #1								@;pujem una fila a partir de la fila actual r2
+		mla r11, r12, r3, r5						@;calculem la posició de r2,r5
+		ldrb r10, [r4, r11]							@;obtenim el valor de la posició anterior calculada
+		and r11, r10, #VALOR						@;ens quedem amb el valor sense gelatines (apliquem màscara 0b0111) 
+		cmp r11, #7									@;mirar si la posicio superior es un 15 buit o un 7 o en l'ultim dels casos un 0
+		beq .entra_if_1_bl							@;si el valor és 7
+		cmp r10, #15
+		beq .buscar_7_posicio_superior				@;si el valor és 15		
+		cmp r11, #0
+		beq .entra_if_1_bl							@;si el valor és 0
+		.buscar_7_posicio_superior:					@;si el valor és 15, o no és ni 7 ni 15 es busca un 7 en la superior
+
+		.for_buscar_7:								@;mira si hi ha algun 7(bloc solid) sobre algun 15 (posició doble suprerior)
+		mla r11, r12, r3, r5						@;obtenir posició r12,r5
+		ldrb r10, [r4, r11]							@;obtenim valor de la posició calculada
+		cmp r10,  #15
+		beq .entra_for_buscar_7						@;si hi ha un 15, salta per trobar un 7
+		and r11, r10, #VALOR
+		cmp r11, #7
+		beq .entra_if_1_bl							@;si és un 7, ja començo a mirar els possibles elements simples per baixar-los lateralment
+		cmp r10, #15
+		bne .disminuir_j_for_2_bl					@;si no cumpleix cap cas (no té cap 7 i es diferent de 15) comença un altre cop executant el for_2 amb la següent columna de la fila actual
+	
+		.entra_for_buscar_7:						@;mira la fila superior per trobar un 7 i així baixar algun element simple de manera lateral
+		sub r12, r2, #1
+		b .for_buscar_7
+		
+		.entra_if_1_bl:								@;quan el valor de la posició superior al 0 trobat és un 7 o un 0, miro el valor de la posició superior esquerra al 0 trobat
+		@;SEGUNDO IF								@;este if serveix per mirar si el valor de la posicio superior esquerra esta entre 1 y 6
+		sub r12, r2, #1								@;fila superior								
+		sub r11, r5, #1 							@;columna esquerra
+		mla r8, r12, r3, r11						@;calculem nova posició superior esquerra del valor anterior
+		ldrb r9, [r4, r8]							@;obtenim el valor de la posició calculada anterior
+		and r10, r9, #VALOR							@;apliquem màscara per quedar-nos amb el valor sense gelatina
+		cmp r11, #0									@;si la columna calculada anteriorment (r11=r5-1) està fora de rang de les dimensions de la matriu
+		bge .condicio_1_if_2_bl						@;si la columna està dins, mirem si aquest valor (r10) és un element simple
+		b .continuar_if_1_bl_1						@;si la columna està fora de rang
+		
+		.condicio_1_if_2_bl:						@;quan la columna superior esquerra està dins de la matriu (r11>=0)
+		cmp r10, #0									@;mirem si el valor d'aquesta columna i fila es un element simple (7<r10>0)
+		bgt .condicio_2_if_2_bl
+		b .continuar_if_1_bl_1
+
+		.condicio_2_if_2_bl:						@;quan es cumpleix que l'element es >0, mirem si és <7, per assegurar-nos de si és un element simple
+		cmp r10, #7									@;mirem si el valor d'aquesta columna i fila es un element simple (7<r10>0)
+		blt .entra_if_2_bl							@;si és un element simple (entre el 0 i el 7, comencem amb les comprovacions disponibles per baixar l'element lateral)
+		b .continuar_if_1_bl_1							
+				
+		.entra_if_2_bl:								@;quan el valor superior esquerra es element simple
+		@;r7	superior esquerra
+		mov r7, r10									@;guardem en el registre r7 el valor superior r10(que cumpleix ser un element simple en la posició superior esquerra)
+		b .continuar_if_1_bl_1						
+
+
+		.continuar_if_1_bl_1:						@;ara s'analitzarà el valor de la posició superior dret
+		@;TERCER IF									@;aquest if serveix per veure si el valor de la dreta a la part superior està entre 1 i 6
+		add r12, r5, #1								@;ara mirarem la columna dreta de la fila superior
+		sub r11, r2, #1								@;pujem la fila
+		mla r8, r11, r3, r12						@;calculem la nova posició (costat superior dret) a partir de r11,r12
+		ldrb r9, [r4, r8]							@;obtenim el valor de la posició calculada 
+		cmp r12, r3									@;mirar si la columna actual es més petita que el número de columnes que conté la matriu
+		blt .condicio_1_if_3_bl						@;si cumpleix que la columna està dins de la matriu
+		b .continuar_if_1_bl_2						@;sino salta
+		
+		.condicio_1_if_3_bl:						@;si la columna està dins de la matriu (r12<COLUMNS)
+		and r10, r9, #VALOR							@;apliquem màscara al valor calcular anteriorment (valor superior dret sobre el valor 0 trobat anterior bucle de recorregut)
+		cmp r10, #0						
+		bgt .condicio_2_if_3_bl						@;si el valor sense gelatina es més gran que 0 mirarem si és petit que 7 (element simple)
+		b .continuar_if_1_bl_2						@;si és més petit (no és més gran que 0)
+
+		.condicio_2_if_3_bl:						@;si l'element cumpleix que és superior a 0, per últim mirarem si l'element és simple (inferior a 7)
+		cmp r10, #7
+		blt .entra_if_3_bl							@;si el valor es inferior a 7, element simple
+		b .continuar_if_1_bl_2						@;si no és un element simple	
+													@;veig el valor de la part superior dreta i esquerra, de manera que pugui saber si tots dos valors són vàlids i poder mirar 
+													@;si he d'aplicar l'aleatorietat o no
+		
+		.entra_if_3_bl:								@;quan el valor superior dret es element simple
+		@;superior_dreta
+		mov r6, r10									@;guardem en el registre r6 el valor superior r10(que cumpleix ser un element simple en la posició superior dreta)
+
+		.continuar_if_1_bl_2:						
+		@;QUART IF									@;en aquest if el que fem és veure si hi ha valor vàlid a l'esquerra i no a la dreta
+													@;en el cas de que si, llavors la posició que està a zero, agafarà el valor de la posició superior esquerra.
+		cmp r6, #0									@;r6 superior dret						
+		beq .entrar_if_4_bl							@;si el superior dret r6==0
+		b .continuar_if_1_bl_3						@;si el superior dret r6!=0 (el valor superior dret es element simple disponible per moidificar al inferior)
+		.entrar_if_4_bl:
+		cmp r7, #0									@;r7 superior esquerra
+		bne .entra_if_4_bl							@;si el superior esquerra r7!=0
+		b .continuar_if_1_bl_3
+
+		.entra_if_4_bl:								@;quan l'elemet superior esquerra és vàlid
+		mov r0, #1									@;assigmen que s'ha produït un moviment al registre r0
+		mla r8, r2, r3, r5							@;calculem la posició r2,r5 a la qual es modificarà el valor
+		ldrb r9, [r4, r8]							@;obtenim el valor de la posició anterior calculada (aquest valor serà un buit 0,8,16)	
+		sub r11, r2, #1		 						@;calculem la fila superior on està el valor que modificarà al de sota
+		sub r12, r5, #1		 						@;calculem la columna (pos superior esquerra) on està el valor que modificarà al de sota
+		mla r10, r11, r3, r12						@;calculem la posició superior on esta el valor que modificarà al de sota a partir de r11,r12
+		ldrb r11, [r4, r10]							@;obtenim el valor de la posició superior esquerra
+		and r12, r11, #VALOR						@;ens quedem amb el valor sense gelatines del valor superior que modificarà al de sota				
+		orr r9, r9, r12								@;fem una orr (suma) del valor de sota r9(amb gelatina) i el valor de dalt r12(sense gelatina)
+		strb r9, [r4, r8]							@;guardem el valor resultant en la seva respectiva posició (posicó de sota on estaba el buit)
+		and r11, r11, #MIRAR_GEL					@;ens quedem amb el valor de gelatina del element superior que modificarà el de sota
+		strb r11, [r4, r10]							@;guardem aquest valor de gelatina en la posició superior esquerra
+		b .final_bl									@;com que ja s'ha produït un moviment, s'acaba amb el recorregut de la matriu i , per tant, s'acaba la rutina baja_laterales
+		
+		.continuar_if_1_bl_3:
+		@;CINQUÈ IF									@;en aquest if el que fem és veure si hi ha valor vàlid a la dreta i no a l'esquerra
+													@;en el cas de que si, llavors la posició que està a zero, agafarà el valor de la posició superior dreta.
+		cmp r7, #0									@;r7 superior esquerra
+		beq .condicio_1_if_5_bl						@;si el superior esquerra r7==0
+		b .continuar_if_1_bl_4
+																									
+		.condicio_1_if_5_bl:						@;quan el superior esquerra r7==0
+		cmp r6, #0									@;r6 superior dret
+		bne .entrar_if_5_bl							@;si el superior dret r6!=0
+		b .continuar_if_1_bl_4
+	
+		.entrar_if_5_bl:							@;quan l'elemet superior dret és vàlid
+		mov r0, #1									@;assigmen que s'ha produït un moviment al registre r0
+		mla r8, r2, r3, r5							@;calculem la posició r2,r5 a la qual es modificarà el valor
+		ldrb r9, [r4, r8]							@;obtenim el valor de la posició anterior calculada (aquest valor serà un buit 0,8,16)
+		sub r11, r2, #1 							@;calculem la fila superior on està el valor que modificarà al de sota
+		add r12, r5, #1  							@;calculem la columna (pos superior dret) on està el valor que modificarà al de sota
+		mla r10, r11, r3, r12						@;calculem la posició superior on esta el valor que modificarà al de sota a partir de r11,r12
+		ldrb r11, [r4, r10]							@;obtenim el valor de la posició superior dreta
+		and r12, r11, #VALOR						@;ens quedem amb el valor sense gelatines del valor superior que modificarà al de sota			
+		orr r9, r9, r12								@;fem una orr (suma) del valor de sota r9(amb gelatina) i el valor de dalt r12(sense gelatina)
+		strb r9, [r4, r8]							@;guardem el valor resultant en la seva respectiva posició (posicó de sota on estaba el buit)
+		and r11, r11, #MIRAR_GEL					@;ens quedem amb el valor de gelatina del element superior que modificarà el de sota
+		strb r11, [r4, r10]							@;guardem aquest valor de gelatina en la posició superior dreta
+		b .final_bl									@;com que ja s'ha produït un moviment, s'acaba amb el recorregut de la matriu i , per tant, s'acaba la rutina baja_laterales 
+
+		.continuar_if_1_bl_4:						
+		@;SISÈ IF									@;en aquest if si es veu que les dues posicions són vàlides(i !=0), llavors recorre a l'aleatorietat per veure qui serà 
+		cmp r7, #0									
+		bne .condicio_1_if_6						@;si el valor esquerra es vàlid, es comprovarà el valor dret
+		b .disminuir_j_for_2_bl						@;si el valor esquerra r7 no és vàlid, saltem per començar a analitzar la següent columna de la fila actual
+													
+		.condicio_1_if_6:							@;es comprovarà el valor dret (ja que el valor esquerra ja es vàlid)
+		cmp r6, #0
+		bne .entrar_if_6_bl							@;si el valor dret també es vàlid, es salta per fer la aleatorietat
+		b .disminuir_j_for_2_bl						@;si el valor dret r6 no és vàlid, saltem per començar a analitzar la següent columna de la fila actual
+
+		.entrar_if_6_bl:							@;quan r6 i r7 son vàlids
+		mov r0, #2									@;es passa el valor 2 a la funció mod_random per posar rang del 0 al 1 incluïts 
+		bl mod_random								@;cridem a la funció random
+		cmp r0, #0									@;si és 0, farem el moviment del costat esquerra
+		beq .superior_esquerra
+		cmp r0, #1									@;si és 1, farem el moviment del costat dret
+		beq .superior_dreta					
+	
+		.superior_dreta:
+		mov r0, #1									@;assigmen que s'ha produït un moviment al registre r0
+		mla r8, r2, r3, r5							@;calculem la posició r2,r5 a la qual es modificarà el valor
+		ldrb r9, [r4, r8]							@;obtenim el valor de la posició anterior calculada (aquest valor serà un buit 0,8,16)	
+		sub r11, r2, #1								@;calculem la fila superior on està el valor que modificarà al de sota
+		add r12, r5, #1								@;calculem la columna (pos superior dret) on està el valor que modificarà al de sota
+		mla r10, r11, r3, r12						@;calculem la posició superior on esta el valor que modificarà al de sota a partir de r11,r12
+		ldrb r11, [r4, r10]							@;obtenim el valor de la posició superior dreta
+		and r12, r11, #VALOR  						@;ens quedem amb el valor sense gelatines del valor superior que modificarà al de sota	
+		orr r9, r9, r12								@;fem una orr (suma) del valor de sota r9(amb gelatina) i el valor de dalt r12(sense gelatina)
+		strb r9, [r4, r8]							@;guardem el valor resultant en la seva respectiva posició (posicó de sota on estaba el buit)
+		and r11, r11, #MIRAR_GEL					@;ens quedem amb el valor de gelatina del element superior que modificarà el de sota
+		strb r11, [r4, r10]							@;guardem aquest valor de gelatina en la posició superior dreta
+		b .final_bl									@;com que ja s'ha produït un moviment, s'acaba amb el recorregut de la matriu i , per tant, s'acaba la rutina baja_laterales 
+
+		.superior_esquerra:
+		mov r0, #1									@;assigmen que s'ha produït un moviment al registre r0
+		mla r8, r2, r3, r5							@;calculem la posició r2,r5 a la qual es modificarà el valor
+		ldrb r9, [r4, r8]							@;obtenim el valor de la posició anterior calculada (aquest valor serà un buit 0,8,16)	
+		sub r11, r2, #1								@;calculem la fila superior on està el valor que modificarà al de sota
+		sub r12, r5, #1								@;calculem la columna (pos superior esquerra) on està el valor que modificarà al de sota
+		mla r10, r11, r3, r12						@;calculem la posició superior on esta el valor que modificarà al de sota a partir de r11,r12
+		ldrb r11, [r4, r10]							@;obtenim el valor de la posició superior esquerra
+		and r12, r11, #VALOR						@;ens quedem amb el valor sense gelatines del valor superior que modificarà al de sota	
+		orr r9, r9, r12								@;fem una orr (suma) del valor de sota r9(amb gelatina) i el valor de dalt r12(sense gelatina)
+		strb r9, [r4, r8]							@;guardem el valor resultant en la seva respectiva posició (posicó de sota on estaba el buit)
+		and r11, r11, #MIRAR_GEL					@;ens quedem amb el valor de gelatina del element superior que modificarà el de sota
+		strb r11, [r4, r10]							@;guardem aquest valor de gelatina en la posició superior esquerra
+		b .final_bl									@;com que ja s'ha produït un moviment, s'acaba amb el recorregut de la matriu i , per tant, s'acaba la rutina baja_laterales 
+
+		.disminuir_j_for_2_bl:
+		sub r5, r5, #1								@;passem a la següent columna esquerra 
+		b .for_2_bl									@;comencem de nou mirant si la columna es troba dins de la matriu, sino es redueix una fila (a fila superior sobre l'actual)
+
+		.disminuir_i_for_1_bl:
+		sub r2, r2, #1								@;passem a la següent fila superior sobre l'actual
+		b .for_1_bl									@;comencem de nou per la fila superior i la última columna de la fila, (si la fila està fora de rang s'acaba la rutina)
+
+		.final_bl:									@;final rutina baja_laterales
+		
+		pop {r1-r12, pc}
 
 
 
