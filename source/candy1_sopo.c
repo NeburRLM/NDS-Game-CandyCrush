@@ -22,7 +22,6 @@ int ult_tex = 0;				// último número de textos de puntuación
 int num_pun = 0;				// número de puntuaciones
 
 
-
 /* escribe_matriz_h(*mat, debug): escribe por pantalla de texto de la NDS el
 	contenido de la matriz usando secuencias escape de posicionamiento en fila
 	y columna (\x1b['fila';'columna'H), donde 'fila' es una coordenada entre 0
@@ -35,6 +34,14 @@ int num_pun = 0;				// número de puntuaciones
 	Jul/2021: versió híbrida, amb paràmetre debug=0, visualització normal,
 				amb paràmetre debug=1, visualització per a depuració.
 */
+
+/* escribe_matriz(*mat): escribe por pantalla de texto de la NDS el contenido
+	de la matriz usando secuencias escape de posicionamiento en fila y
+	columna (\x1b['fila';'columna'H), donde 'fila' es una coordenada entre 0 y
+	23, y columna es una coordenada entre 0 y 31, y la posición (0,0) correspon-
+	de a la casilla superior izquierda;
+	además, se usa la secuencia escape para cambiar el color del texto
+	(\x1b['color'm), donde 'color' es un código de color de la librería NDS */
 void escribe_matriz_h(char mat[][COLUMNS], int debug)
 {
 	int i, j, value, color;
@@ -85,7 +92,6 @@ void escribe_matriz_debug(char mat[][COLUMNS])
 {
 	escribe_matriz_h(mat, 1);
 }
-
 
 /* contar_gelatinas(*mat): calcula cuantas gelatinas quedan en la matriz de
 	juego, contando 1 para gelatines simples y 2 para gelatinas dobles */
