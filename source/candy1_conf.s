@@ -39,6 +39,17 @@
 @;		16+:	gelatina doble (a sumarle código de elemento)
 		.global mapas
 	mapas:
+	
+		@; mapa 3: gelatinas simples
+		.byte 0,0,0,8,8,8,0,0,15
+		.byte 0,0,0,0,8,0,0,0,15
+		.byte 0,0,8,8,8,8,0,0,15
+		.byte 0,0,8,0,8,0,0,0,15
+		.byte 0,0,8,0,8,0,0,0,15
+		.byte 0,0,8,0,8,0,0,0,15
+		.byte 0,0,8,8,8,8,0,0,15
+		.byte 0,0,0,0,0,0,0,0,15
+		.byte 0,0,0,0,0,0,0,0,15
 
 	@; mapa 1: paredes horizontales y verticales
 		.byte 1,3,4,1,5,6,2,15,15
@@ -74,17 +85,6 @@
 		.byte 4,5,5,2,5,5,7,0,15
 		.byte 7,8,1,5,4,6,8,0,15
 		.byte 8,8,8,8,8,8,8,0,15
-	
-	@; mapa 3: gelatinas simples
-		.byte 0,0,0,8,8,8,0,0,15
-		.byte 0,0,0,0,8,0,0,0,15
-		.byte 0,0,8,8,8,8,0,0,15
-		.byte 0,0,8,0,8,0,0,0,15
-		.byte 0,0,8,0,8,0,0,0,15
-		.byte 0,0,8,0,8,0,0,0,15
-		.byte 0,0,8,8,8,8,0,0,15
-		.byte 0,0,0,0,0,0,0,0,15
-		.byte 0,0,0,0,0,0,0,0,15
 
 	@; mapa 4: gelatinas dobles
 		.byte 0,15,0,15,0,7,0,15,15
