@@ -72,7 +72,7 @@ int main(void)
             } while (!(keysHeld() & (KEY_START)));
             do{
 				escribe_matriz(matrix);
-				retardo(5);
+				retardo(1);
             }while(baja_elementos(matrix)==1);
 		}else{
 			printf("\x1b[39m\x1b[3;0H hay cambios: NO");
