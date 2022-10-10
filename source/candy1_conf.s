@@ -40,16 +40,6 @@
 		.global mapas
 	mapas:
 	
-		@; mapa 3: gelatinas simples
-		.byte 0,0,0,8,8,8,0,0,15
-		.byte 0,0,0,0,8,0,0,0,15
-		.byte 0,0,8,8,8,8,0,0,15
-		.byte 0,0,8,0,8,0,0,0,15
-		.byte 0,0,8,0,8,0,0,0,15
-		.byte 0,0,8,0,8,0,0,0,15
-		.byte 0,0,8,8,8,8,0,0,15
-		.byte 0,0,0,0,0,0,0,0,15
-		.byte 0,0,0,0,0,0,0,0,15
 
 	@; mapa 1: paredes horizontales y verticales
 		.byte 1,3,4,1,5,6,2,15,15

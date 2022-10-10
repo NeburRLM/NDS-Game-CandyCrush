@@ -13,6 +13,7 @@ MASK_VALOR_SENSE_GEL = 0b00111
 VALOR = 0b00111
 MIRAR_GEL = 0b11000
 
+
 @;-- .text. código de las rutinas ---
 .text	
 		.align 2
@@ -111,6 +112,7 @@ cuenta_repeticiones:
 			
 		.Lconrep_fin:								@;acaba el programa
 		mov r0, r4
+
 		
 		pop {r1-r12, pc}
 
@@ -183,18 +185,18 @@ baja_verticales:
 		ldrb r7, [r4, r6]							@;obtenim valor de la posició anterior obtinguda
 		cmp r7, #15
 		beq .entra_for_2							@;si el valor obtingut es 15, es segueix analitzant la columna actual cap a baix (r5)
-		and r7, r7, #MASK_VALOR_SENSE_GEL
-		cmp r7, #0
-		beq .posAltaBuit
-		b .for_1							 
+		and r7, r7, #MASK_VALOR_SENSE_GEL			@;ens quedem amb el valor sense gelatina
+		cmp r7, #0									@;mirem si es un buit (0,8,16)
+		beq .posAltaBuit							@;si es un buit, mirem si es troba a la posició més alta de la matriu per quedarn-nos amb la seva fila
+		b .for_1							 		@;comencem amb el recorregut de la fila(r3),columna actual(r1)
 		
 		.entra_for_2:								@;si el valor anterior obtingut es 15
 		add r5, r5, #1								@;baixem una fila cap a baix de la columna en estudi actual (r5)
 		b .for_2									@;saltem un altre cop al for_2 per mirar si ens situem amb un valor 15
 		
-		.posAltaBuit:
+		.posAltaBuit:								@;si el valor es un buit, ens quedem amb la seva fila 
 		mov r12, r5
-		b .for_1
+		b .for_1									@;comencem amb el recorregut de la fila(r3),columna actual(r1)
 			
 		.for_1:
 		mla r6, r3, r2, r1							@;calculem la posició actual [r3,r1]
@@ -212,8 +214,8 @@ baja_verticales:
 		and r11,r7, #MASK_VALOR_SENSE_GEL			@;obtenim si es un valor buit aplicant màscara
 		cmp r11, #0									@;mirem si el resultat es 0 (buit)
 		beq .mirarBuit								@;si es 0 mirarem si es troba a la posició més alta
-		.valorNoAlt:								@;control de salt quan el valor buit no es trobaba a la posició més alta
 		
+		.valorNoAlt:								@;control de salt, quan el valor buit no es trobaba a la posició més alta		
 		sub r9, r3, #1								@;pujem a la fila superior
 		cmp r9, #0
 		blt .disminuir_j							@;si l'analisi de les files termina, passar a la següent columna
@@ -231,16 +233,16 @@ baja_verticales:
 		b .canviValors								@;si no és ni 15 ni 7, serà un valor vàlid, i per tant s'han de fer els canvis 
 			
 		.mirarBuit:
-		cmp r12,r3
-		beq .generaRandom
-		b .valorNoAlt
+		cmp r12,r3									@;mirem si r12(que guarda la fila més alta on es troba un buit) coincideix amb la fila actual 
+		beq .generaRandom							@;si coincideix, generem el valor nou random
+		b .valorNoAlt								@;sino, seguim amb el recorregut cap a les files superiors
 			
 		.cas_valor_15:
 		sub r9, r9, #1
 		b .entra_if_1_1								@;continuem amb l'analisi de les files superiors en la columna actual
 			
-		.canviValors:
-		cmp r8,#0
+		.canviValors:								@;quan no es ni buit, ni 15, ni 7->es produeixen els moviments
+		cmp r8,#0									
 		beq .disminuir_j
 		bgt .canviElementSimple
 		.segueixCanviValor_noSimple:
@@ -264,10 +266,10 @@ baja_verticales:
 		mov r0, #7									@;li passem un 7 per a que es creï un valor random entre el 0 i el 6
 		bl mod_random								
 		cmp r0, #0									
-		beq .generaRandom	
-		orr r9, r7, r0
-		strb r9, [r4, r6]
-		mov r0, #1
+		beq .generaRandom							@;si crea un 0, repetim un altre cop l'execució del random
+		orr r9, r7, r0								@;fem la suma dels dos valors (per a respectar el valor de la possible gelatina de base)
+		strb r9, [r4, r6]							@;guardem el resultat de l'operació 
+		mov r0, #1									@;modifiquem que s'ha produït un moviment i sortim de la rutina
 		b .final_bv
 			
 		.disminuir_j:								@;disminuir columna
@@ -523,6 +525,9 @@ baja_laterales:
 		.final_bl:									@;final rutina baja_laterales
 		
 		pop {r1-r12, pc}
+
+
+
 
 @;=                                                               		=
 @;=== candy1_init.s: rutinas para inicializar la matriz de juego	  ===
