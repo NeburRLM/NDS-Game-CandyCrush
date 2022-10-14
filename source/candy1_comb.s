@@ -1,7 +1,7 @@
 @;=                                                               		=
 @;=== candy1_combi.s: rutinas para detectar y sugerir combinaciones   ===
 @;=                                                               		=
-@;=== Programador tarea 1G: xxx.xxx@estudiants.urv.cat				  ===
+@;=== Programador tarea 1G: ines.ortiz@estudiants.urv.cat				  ===
 @;=== Programador tarea 1H: yyy.yyy@estudiants.urv.cat				  ===
 @;=                                                             	 	=
 
@@ -28,10 +28,190 @@
 @;		R0 = 1 si hay una secuencia, 0 en otro caso
 	.global hay_combinacion
 hay_combinacion:
-		push {lr}
+		push {r1-r8,lr}
 		
+		mov r1, #0 @;filas
+		mov r2, #0 @;columnas
+		mov r4, #0 @;posicio de la matriu
+		mov r8, r0
+		.Lcodi:
+		ldrb r5, [r8, r4]
+		cmp r5, #0 @;mirem que no es espai buit, bloc solid o forat
+		beq .Lfi
+		cmp r5, #7
+		beq .Lfi
+		cmp r5, #8
+		beq .Lfi
+		cmp r5, #15
+		beq .Lfi
+		cmp r5, #16
+		beq .Lfi
 		
-		pop {pc}
+		cmp r2, #COLUMNS-2 @;mirem que la columna sigui anterior a la ultima
+		bgt .Lfi
+		mov r6, r4 @;auxiliar de les posicions matriu
+		add r6, #1 @;mirem la posicio de la dreta
+		ldrb r7, [r8, r6]
+		cmp r7, r5 @;miramos que sea diferente el numero de su derecha
+		beq .Lfi
+		cmp r7, #0 @;miramos que no sea u espacio en blanca ni bloque ni hueco
+		beq .Lfi
+		cmp r7, #7
+		beq .Lfi
+		cmp r7, #8
+		beq .Lfi
+		cmp r7, #15
+		beq .Lfi
+		cmp r7, #16
+		beq .Lfi
+		
+		strb r7, [r8, r4] @;intercambiamos las posiciones
+		strb r5, [r8, r6]
+		
+		@;0 -> este derecha, 1 -> sur, 2 -> oeste, 3->norte
+		mov r0, r8 @;miramos si hay alguna secuencia posible en alguna orientacion
+		mov r3, #0
+		bl cuenta_repeticiones
+		cmp r0, #3
+		bge .Lficomphor
+		mov r0, r8 @;miramos si hay alguna secuencia posible en alguna orientacion
+		mov r3, #1
+		bl cuenta_repeticiones
+		cmp r0, #3
+		bge .Lficomphor
+		mov r0, r8 @;miramos si hay alguna secuencia posible en alguna orientacion
+		mov r3, #2
+		bl cuenta_repeticiones
+		cmp r0, #3
+		bge .Lficomphor
+		mov r0, r8 @;miramos si hay alguna secuencia posible en alguna orientacion
+		mov r3, #3
+		bl cuenta_repeticiones
+		cmp r0, #3
+		bge .Lficomphor
+		
+		@;ahora hacemos lo mismo que antes pero para la posicion de la derecha
+		add r2, #1
+		mov r0, r8 @;miramos si hay alguna secuencia posible en alguna orientacion
+		mov r3, #0
+		bl cuenta_repeticiones
+		cmp r0, #3
+		bge .Lficomphor
+		mov r0, r8 @;miramos si hay alguna secuencia posible en alguna orientacion
+		mov r3, #1
+		bl cuenta_repeticiones
+		cmp r0, #3
+		bge .Lficomphor
+		mov r0, r8 @;miramos si hay alguna secuencia posible en alguna orientacion
+		mov r3, #2
+		bl cuenta_repeticiones
+		cmp r0, #3
+		bge .Lficomphor
+		mov r0, r8 @;miramos si hay alguna secuencia posible en alguna orientacion
+		mov r3, #3
+		bl cuenta_repeticiones
+		cmp r0, #3
+		bge .Lficomphor
+		
+		strb r5, [r8, r4] @;ponemos los valores en su sitio anterior
+		strb r7, [r8, r6]
+		sub r2, #1 @;volvemos a poner el numero de columnas inicial
+		b .Lfi
+		
+		.Lficomphor:
+		mov r0, #1
+		strb r5, [r8, r4] @;ponemos los valores en su sitio anterior
+		strb r7, [r8, r6]
+		b .Lfinal
+		
+		cmp r1, #ROWS-1
+		bge .Lfi
+		mov r6, r1 @;auxiliar de la posicion matriz
+		add r6, #9 @;para mirar la posicion de abajo
+		ldrb r7, [r8, r6]
+		cmp r5, r7 @;miramos que las posiciones no sean iguales i que no sea hueco, etc.
+		beq .Lfi
+		cmp r7, #0
+		beq .Lfi
+		cmp r7, #7
+		beq .Lfi
+		cmp r7, #8
+		beq .Lfi
+		cmp r7, #15
+		beq .Lfi
+		cmp r7, #16
+		beq .Lfi
+		
+		strb r5, [r8, r6] @;intercambiamos posiciones
+		strb r7, [r8, r4]
+		
+		mov r0, r8 @;miramos si hay alguna secuencia posible en alguna orientacion
+		mov r3, #0
+		bl cuenta_repeticiones
+		cmp r0, #3
+		bge .Lficompver
+		mov r0, r8 @;miramos si hay alguna secuencia posible en alguna orientacion
+		mov r3, #1
+		bl cuenta_repeticiones
+		cmp r0, #3
+		bge .Lficompver
+		mov r0, r8 @;miramos si hay alguna secuencia posible en alguna orientacion
+		mov r3, #2
+		bl cuenta_repeticiones
+		cmp r0, #3
+		bge .Lficompver
+		mov r0, r8 @;miramos si hay alguna secuencia posible en alguna orientacion
+		mov r3, #3
+		bl cuenta_repeticiones
+		cmp r0, #3
+		bge .Lficompver
+		
+		@;hacemos lo mismo pero para la posicion de abajo
+		add r1, #1
+		mov r0, r8 @;miramos si hay alguna secuencia posible en alguna orientacion
+		mov r3, #0
+		bl cuenta_repeticiones
+		cmp r0, #3
+		bge .Lficompver
+		mov r0, r8 @;miramos si hay alguna secuencia posible en alguna orientacion
+		mov r3, #1
+		bl cuenta_repeticiones
+		cmp r0, #3
+		bge .Lficompver
+		mov r0, r8 @;miramos si hay alguna secuencia posible en alguna orientacion
+		mov r3, #2
+		bl cuenta_repeticiones
+		cmp r0, #3
+		bge .Lficompver
+		mov r0, r8 @;miramos si hay alguna secuencia posible en alguna orientacion
+		mov r3, #3
+		bl cuenta_repeticiones
+		cmp r0, #3
+		bge .Lficompver
+		
+		strb r5, [r8, r4] @;ponemos los valores en su sitio anterior
+		strb r7, [r8, r6]
+		sub r1, #1 @;volvemos a poner el numero de columnas inicial
+		b .Lfi
+		
+		.Lficompver:
+		mov r0, #1
+		strb r5, [r8, r4] @;ponemos los valores en su sitio anterior
+		strb r7, [r8, r6]
+		b .Lfinal
+		
+		.Lfi:
+		cmp r2, #COLUMNS-1 @;mirem si estem a la ultima col.
+		moveq r2, #0 @;si estem a la ultima col posem a 0 les col. i sumem una fila
+		addeq r1, #1
+		addne r2, #1 @;si no estem avancem una col.
+		add r4, #1
+		cmp r4, #ROWS*COLUMNS @;mirem que no estem al final de la matriu
+		blo .Lcodi
+		mov r0, #0
+		.Lfinal:
+		
+		pop {r1-r8,pc}
 
 
 
@@ -55,6 +235,8 @@ hay_combinacion:
 	.global sugiere_combinacion
 sugiere_combinacion:
 		push {lr}
+		
+		
 		
 		
 		pop {pc}
@@ -117,6 +299,43 @@ generar_posiciones:
 detectar_orientacion:
 		push {r3,r5,lr}
 		
+		mov r5, #0				@;R5 = índice bucle de orientaciones
+		mov r0, #4
+		bl mod_random
+		mov r3, r0				@;R3 = orientación aleatoria (0..3)
+	.Ldetori_for:
+		mov r0, r4
+		bl cuenta_repeticiones
+		cmp r0, #1
+		beq .Ldetori_cont		@;no hay inicio de secuencia
+		cmp r0, #3
+		bhs .Ldetori_fin		@;hay inicio de secuencia
+		add r3, #2
+		and r3, #3				@;R3 = salta dos orientaciones (módulo 4)
+		mov r0, r4
+		bl cuenta_repeticiones
+		add r3, #2
+		and r3, #3				@;restituye orientación (módulo 4)
+		cmp r0, #1
+		beq .Ldetori_cont		@;no hay continuación de secuencia
+		tst r3, #1
+		bne .Ldetori_vert
+		mov r3, #4				@;detección secuencia horizontal
+		b .Ldetori_fin
+	.Ldetori_vert:
+		mov r3, #5				@;detección secuencia vertical
+		b .Ldetori_fin
+	.Ldetori_cont:
+		add r3, #1
+		and r3, #3				@;R3 = siguiente orientación (módulo 4)
+		add r5, #1
+		cmp r5, #4
+		blo .Ldetori_for		@;repetir 4 veces
+		
+		mov r3, #6				@;marca de no encontrada
+		
+	.Ldetori_fin:
+		mov r0, r3				@;devuelve orientación o marca de no encontrada
 		
 		pop {r3,r5,pc}
 
