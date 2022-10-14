@@ -44,10 +44,64 @@
 @;		R1 = número de mapa de configuración
 	.global inicializa_matriz
 inicializa_matriz:
-		push {r1-r12, lr}		@;guardar registros utilizados
+		push {r1-r12, lr}							@;guardar registros utilizados
 		
-	
-		pop {r1-r12, pc}			@;recuperar registros y volver
+		ldr r2, =mapas								@;carreguem la variable global mapas (mapa de configuracio)
+		mov r10, r0									@;carreguem el mapa de matriz de juego	
+		mov r4, #ROWS								@;carreguem el número de files que conté les matrius
+		mov r5, #COLUMNS							@;carreguem el número de columnes que conté les matrius
+		mul r6, r4, r5								@;obtenim el total de posicions de la matriu (files·columnes)
+		mla r4, r6, r1, r2							@;carreguem la direcció del mapa de conf N (tenint en compte la seva dimensió i el seu número)
+		
+		@;comencem amb el recorregut de la matriu de configuració
+		mov r1, #0									@;fila actual (inicialment a 0)
+		.Lfor:
+		mov r2, #0									@;columna actual (inicialment a 0)
+		.Lfor1:
+		mla r7, r1, r5, r2 							@;obtenim la posició actual de la matriu [r1,r2]
+		ldrb r8, [r4, r7]							@;obtenim el valor de la posició actual calculada del mapa de configuració N
+		
+		@;mirem si el valor de la posició actual es un objecte variable (0,8,16)
+		cmp r8, #0
+		beq .objecteVariable
+		cmp r8, #8
+		beq .objecteVariable
+		cmp r8, #16
+		beq .objecteVariable
+		b .objecteFixe
+		
+		.objecteVariable:							@;generem valor random 
+		mov r0, #7									@;li passem un 7 per a que es creï un valor random entre el 0 i el 6 
+		bl mod_random								
+		cmp r0, #0									
+		beq .objecteVariable						@;si crea un 0, repetim un altre cop l'execució del random
+		add r9,r0,r8								@;una vegada creat el random correctament, fem la suma del valor r0(raondom) i r8(valor buit anterior 0,8,16)
+		strb r9, [r10,r7]							@;guardem el resultat de la posició actual a la nova matriu de joc
+				
+		mov r0, r10									@;passem la direcció de la matriu de joc a r0 per cridar a la funció cuenta_repeticiones
+		mov r3, #2									@;oeste
+		bl cuenta_repeticiones						@;cridem al cuenta_repeticiones(r0=@matriu_joc, r1=fil, r2=col, r3=ori)
+		cmp  r0, #3									@;mirem si hi ha seqüencia (3 o superior)
+		strgeb r8, [r10,r7]							@;si hi ha seqüencia de 3 o superior, guardem el valor buit per tornar a fer el mod_random 
+		bge .objecteVariable						@;cridem altre cop al mod_random
+		
+		mov r0, r10									@;passem la direcció de la matriu de joc a r0 per cridar a la funció cuenta_repeticiones
+		mov r3, #3									@;norte
+		bl cuenta_repeticiones						@;cridem al cuenta_repeticiones(r0=@matriu_joc, r1=fil, r2=col, r3=ori)
+		cmp  r0, #3									@;mirem si hi ha seqüencia (3 o superior)
+		strgeb r8, [r10,r7]							@;si hi ha seqüencia de 3 o superior, guardem el valor buit per tornar a fer el mod_random 
+		bge .objecteVariable						@;cridem altre cop al mod_random
+		
+		.objecteFixe:
+		strb r8, [r10,r7]  							@;guardem el valor fixe en la matriz de juego en la mateixa posicó on es troba en la matriz de conf	
+		add r2, #1									@;sumem una columna (r2) per passar a la següent fila de la posició actual de la matriu de conf
+		cmp r2, #COLUMNS			
+		blt .Lfor1									@;si es més petit que el número total de columnes (dins dimensió), seguim amb el recorregut en la fila actual
+		add r1, #1									@;si es troba fora del número màxim de columnes, baixem a la fila de sota incrementant r1, i inicialitzem a 0 (la columna r2 de la fila actual)
+		cmp r1, #ROWS
+		blt .Lfor									@;si es més petit que el número total de files (dins dimensió), seguim amb el recorregut
+		
+		pop {r1-r12, pc}							@;recuperar registros y volver
 
 
 

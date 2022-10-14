@@ -195,7 +195,7 @@ baja_verticales:
 		b .for_2									@;saltem un altre cop al for_2 per mirar si ens situem amb un valor 15
 		
 		.posAltaBuit:								@;si el valor es un buit, ens quedem amb la seva fila 
-		mov r12, r5
+		mov r12, r5									@;guardem a r12 el valor més alt del buit
 		b .for_1									@;comencem amb el recorregut de la fila(r3),columna actual(r1)
 			
 		.for_1:
@@ -210,7 +210,7 @@ baja_verticales:
 		beq .entra_if_1		 
 		b .disminuir_j								@;si el valor no es buit, passa a mirar la següent columna de la fila actual
 			
-		.entra_if_1:		
+		.entra_if_1:								@;analitzarem els seus superiors
 		and r11,r7, #MASK_VALOR_SENSE_GEL			@;obtenim si es un valor buit aplicant màscara
 		cmp r11, #0									@;mirem si el resultat es 0 (buit)
 		beq .mirarBuit								@;si es 0 mirarem si es troba a la posició més alta
@@ -219,12 +219,16 @@ baja_verticales:
 		sub r9, r3, #1								@;pujem a la fila superior
 		cmp r9, #0
 		blt .disminuir_j							@;si l'analisi de les files termina, passar a la següent columna
-		.entra_if_1_1:								@;control per aprofitar el salt pel bucle de valors = 15
+		.entra_if_1_1:								@;control salt pel bucle de valors = 15 (saltem aquesta posició)
 		mla r10, r9, r2, r1							@;calculem la posició de la posició superior
 		ldrb r8, [r4, r10]							@;obtenim el valor de la posició superior calculada
 		
 		@;mirem si els valors superiors son vàlids per fer els canvis
-		cmp r8, #0
+		cmp r8, #0									@;si el valor és 0, no farem els canvis ja que sino es produiria bucle infinit
+		beq .disminuir_j
+		cmp r8, #8									@;si el valor és 0, no farem els canvis ja que sino es produiria bucle infinit
+		beq .disminuir_j
+		cmp r8, #16									@;si el valor és 0, no farem els canvis ja que sino es produiria bucle infinit
 		beq .disminuir_j
 		cmp r8, #15
 		beq .cas_valor_15							@;si el valor es un hueco (15) passem a mirar la pròxima fila superior
@@ -241,26 +245,26 @@ baja_verticales:
 		sub r9, r9, #1
 		b .entra_if_1_1								@;continuem amb l'analisi de les files superiors en la columna actual
 			
-		.canviValors:
-		cmp r8,#0
+		.canviValors:								@;quan el valor superior és un valor vàlid (!=0,8,16,15,7)
+		cmp r8,#0									
 		beq .disminuir_j
-		bgt .canviElementSimple
-		.segueixCanviValor_noSimple:
-		and r11, r8, #MIRAR_GEL
-		strb r11, [r4,r10]
-		and r8, r8, #MASK_VALOR_SENSE_GEL
-		.segueix:
-		orr r10, r8, r7
-		strb r10, [r4,r6]
-		mov r0, #1
-		b .final_bv
+		bgt .canviElementSimple						@;si el valor superior és més gran que 0, saltem com a possible canvi de element simple	
+		.segueixCanviValor_noSimple:				@;si el valor no és un element simple (x<1)||(x>6), haurem de tenir en compte el valor base de gelatina 
+		and r11, r8, #MIRAR_GEL						@;ens quedem amb el seu valor de gelatina
+		strb r11, [r4,r10]							@;guardem el valor base de gelatina a la posició superior
+		and r8, r8, #MASK_VALOR_SENSE_GEL			@;ara obtenim el seu valor sense gelatina per baixar-lo i fer la suma
+		.segueix:									@;salt per acabar de fer l'últim moviment de suma de baixada de l'element superior
+		orr r10, r8, r7								@;fem la suma del valor superior amb l'inferior
+		strb r10, [r4,r6]							@;guardem el resultat en la posició actual inferior
+		mov r0, #1									@;anotem que s'ha produït un moviment
+		b .final_bv									@;sortim de la rutina de baja_verticales
 		
-		.canviElementSimple:
+		.canviElementSimple:						@;si el valor superior és més petit que 7, realitzem canvi d'element simple
 		cmp r8, #7
-		bge .segueixCanviValor_noSimple
-		mov r11, #0
-		strb r11, [r4,r10]
-		b .segueix
+		bge .segueixCanviValor_noSimple				@;si és més gran que 7 (valor no simple), relitza canvi element no simple
+		mov r11, #0									@;si és un element simple (0<x<7), fiquem a 0 la posició superior de la qual baixarà l'element simple
+		strb r11, [r4,r10]							@;guardem el 0 en la posició superior
+		b .segueix									@;saltem per acabar de fer la baixada de l'element (sumar el valor superior simple amb el valor de sota)
 			
 		.generaRandom:								@;generar random quan el valor buit es troba a la posició més alta de la matriu
 		mov r0, #7									@;li passem un 7 per a que es creï un valor random entre el 0 i el 6
