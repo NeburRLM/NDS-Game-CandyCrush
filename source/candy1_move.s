@@ -226,6 +226,10 @@ baja_verticales:
 		@;mirem si els valors superiors son vàlids per fer els canvis
 		cmp r8, #0
 		beq .disminuir_j
+		cmp r8, #8
+		beq .disminuir_j
+		cmp r8, #16
+		beq .disminuir_j
 		cmp r8, #15
 		beq .cas_valor_15							@;si el valor es un hueco (15) passem a mirar la pròxima fila superior
 		cmp r8, #7
