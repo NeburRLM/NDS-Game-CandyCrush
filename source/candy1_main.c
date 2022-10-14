@@ -61,15 +61,27 @@ int main(void)
 	actualizar_contadores(1);
 	
 	do							// bucle principal de pruebas
-	{
+	{	
+		inicializa_matriz(matrix, level);
+		escribe_matriz(matrix);
+		printf("\x1b[39m\x1b[3;0H Muestra inicializa_matriz");
+		printf("\x1b[33m\x1b[4;0H (pulse A/B para baja_elementos)");
+		do
+		{	swiWaitForVBlank();
+			scanKeys();					// esperar pulsaci?n tecla 'A' o 'B'
+		} while (!(keysHeld() & (KEY_A | KEY_B)));
+		printf("\x1b[39m\x1b[3;0H                                 ");
+		printf("\x1b[33m\x1b[4;0H                                 ");
 		copia_mapa(matrix, level);
 		escribe_matriz(matrix);
 		if(baja_elementos(matrix)==1){
 			printf("\x1b[39m\x1b[3;0H hay cambios: SI");
+			printf("\x1b[38m\x1b[4;0H (pulse DOWN para ver cambios)");
 			do
             {    swiWaitForVBlank();
                 scanKeys();                    // esperar pulsaci?n tecla 'START'
-            } while (!(keysHeld() & (KEY_START)));
+            } while (!(keysHeld() & (KEY_DOWN)));
+			printf("\x1b[38m\x1b[4;0H                               ");
             do{
 				escribe_matriz(matrix);
 				retardo(1);
@@ -83,8 +95,7 @@ int main(void)
 		{	swiWaitForVBlank();
 			scanKeys();					// esperar pulsaci?n tecla 'A' o 'B'
 		} while (!(keysHeld() & (KEY_A | KEY_B)));
-		printf("\x1b[3;0H                               ");
-	
+		printf("\x1b[38m\x1b[5;19H                      ");
 		retardo(5);
 		if (keysHeld() & KEY_A)		// si pulsa 'A',
 		{
