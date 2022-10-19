@@ -26,7 +26,9 @@ int points;						// contador global de puntos
 int movements;					// número de movimientos restantes
 int gelees;						// número de gelatinas restantes
 
-
+char vector[6];
+char matrixAux[ROWS][COLUMNS];
+int f, c, cont=0;
 
 /* actualizar_contadores(code): actualiza los contadores que se indican con el
 	parámetro 'code', que es una combinación binaria de booleanos, con el
@@ -56,10 +58,24 @@ int main(void)
 	do							// bucle principal de pruebas
 	{
 		copia_mapa(matrix, level);		// sustituye a inicializa_matriz()
-		escribe_matriz_debug(matrix);
-		if (hay_combinacion(matrix))			// si hay combinaciones
+		escribe_matriz(matrix);
+		if (hay_combinacion(matrix)){			// si hay combinaciones
 			printf("\x1b[39m\x1b[3;0Hhay combinacion: SI");
-		else
+			sugiere_combinacion(matrix, vector);
+			copia_mapa(matrixAux, level);
+			for(int i = 0; i<3;i++){
+				f = vector[i] - '0';
+				c = vector[i+1] - '0';
+				matrixAux[f][c] = -1 + '0';
+			}
+			do
+			{		
+				escribe_matriz(matrix);
+				retardo(60);
+				escribe_matriz(matrixAux);
+				cont++;
+			} while (cont==10);
+		}else
 			printf("\x1b[39m\x1b[3;0Hhay combinacion: NO");
 		retardo(5);
 		printf("\x1b[38m\x1b[3;19H (pulse A/B)");
