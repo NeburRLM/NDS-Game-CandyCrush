@@ -6,10 +6,10 @@
 	(2º curso de Grado de Ingeniería Informática - ETSE - URV)
 	
 	Analista-programador: santiago.romani@urv.cat
-	Programador 1: xxx.xxx@estudiants.urv.cat
-	Programador 2: yyy.yyy@estudiants.urv.cat
-	Programador 3: zzz.zzz@estudiants.urv.cat
-	Programador 4: uuu.uuu@estudiants.urv.cat
+	Programador 1: ruben.lopezm@estudiants.urv.cat
+	Programador 2: ines.ortiz@estudiants.urv.cat
+	Programador 3: ruben.lopezm@estudiants.urv.cat
+	Programador 4: ines.ortiz@estudiants.urv.cat
 
 ------------------------------------------------------------------------------*/
 #include <nds.h>
@@ -155,12 +155,15 @@ int main(void)
 			if (((points >= 0) && (gelees == 0))
 					|| (movements == 0) || !hay_combinacion(matrix))
 			{
-				if ((points >= 0) && (gelees == 0))
+				if ((points >= 0) && (gelees == 0)){
 					printf("\x1b[39m\x1b[6;20H _SUPERADO_");
-				else if (movements == 0)
+					level++;				// incrementa nivel
+					printf("\x1b[2;8H      ");	// borra puntos anteriores
+					initializing = 1;			// passa a inicializar nivel
+				}else{
 					printf("\x1b[39m\x1b[6;20H _REPETIR_");
-				else
-					printf("\x1b[39m\x1b[6;20H _BARAJAR_");
+					initializing = 1;
+				}
 				
 				printf("\x1b[39m\x1b[8;20H (pulse A)");
 				do
@@ -170,21 +173,6 @@ int main(void)
 				printf("\x1b[6;20H           ");
 				printf("\x1b[8;20H           ");	// borra mensajes
 				
-				/*if (((points >= 0) && (gelees == 0)) || (movements == 0))
-				{
-					if (((points >= 0) && (gelees == 0))
-							&& (level < MAXLEVEL-1))
-						level++;				// incrementa nivel
-					printf("\x1b[2;8H      ");	// borra puntos anteriores
-					initializing = 1;			// passa a inicializar nivel
-				}
-				else
-				{
-					recombina_elementos(matrix);
-					escribe_matriz(matrix);
-					change = 1;					// forzar nueva verificación
-				}								// de combinaciones
-				borra_puntuaciones();*/
 			}
 			lapse = 0;
 		}
@@ -208,4 +196,3 @@ int main(void)
 	
 	return(0);					// nunca retornará del main
 }
-
