@@ -6,7 +6,7 @@
 	(2? curso de Grado de Ingenier?a Inform?tica - ETSE - URV)
 	
 	Analista-programador: santiago.romani@urv.cat
-	Programador 1: xxx.xxx@estudiants.urv.cat
+	Programador 1: ruben.lopezm@estudiants.urv.cat
 	Programador 2: yyy.yyy@estudiants.urv.cat
 	Programador 3: ruben.lopezm@estudiants.urv.cat
 	Programador 4: uuu.uuu@estudiants.urv.cat
@@ -37,7 +37,7 @@ int gelees;						// n?mero de gelatinas restantes
 		bit 3:	gelatinas  */
 void actualizar_contadores(int code)
 {
-	if (code & 1) printf("\x1b[38m\x1b[1;8H %d", level);
+	if (code & 1) printf("\x1b[38m\x1b[1;7H %d", level);
 	if (code & 2) printf("\x1b[39m\x1b[2;8H %d  ", points);
 	if (code & 4) printf("\x1b[38m\x1b[1;28H %d ", movements);
 	if (code & 8) printf("\x1b[37m\x1b[2;28H %d ", gelees);
@@ -56,8 +56,8 @@ int main(void)
 
 
 	consoleDemoInit();			// inicializaci?n de pantalla de texto
-	printf("candyNDS (prueba tarea 1F)\n");
-	printf("\x1b[38m\x1b[1;0H  nivel:");
+	printf("candyNDS (prueba tarea 1F y 1A)\n");
+	printf("\x1b[38m\x1b[1;0H  mapa:");
 	actualizar_contadores(1);
 	
 	do							// bucle principal de pruebas
