@@ -5,8 +5,7 @@
 	Funciones de soporte para el programa principal (ver 'candy1_main.c')
 	
 	Analista-programador: santiago.romani@urv.cat
-	programador auxiliar: pere.millan@urv.cat
-
+	
 ------------------------------------------------------------------------------*/
 #include <nds.h>
 #include <stdio.h>
@@ -22,24 +21,6 @@ int ult_tex = 0;				// último número de textos de puntuación
 int num_pun = 0;				// número de puntuaciones
 
 
-<<<<<<< HEAD
-=======
-
->>>>>>> prog4
-/* escribe_matriz_h(*mat, debug): escribe por pantalla de texto de la NDS el
-	contenido de la matriz usando secuencias escape de posicionamiento en fila
-	y columna (\x1b['fila';'columna'H), donde 'fila' es una coordenada entre 0
-	y 23, y columna es una coordenada entre 0 y 31, y la posición (0,0) 
-	corresponde a la casilla superior izquierda; además, se usa la secuencia 
-	escape para cambiar el color del texto (\x1b['color'm), donde 'color'
-	es un código de color de la librería NDS;
- 
-	Oct/2020: versió adaptada per a debug/test *** pere.millan@urv.cat ***
-	Jul/2021: versió híbrida, amb paràmetre debug=0, visualització normal,
-				amb paràmetre debug=1, visualització per a depuració.
-*/
-<<<<<<< HEAD
-
 /* escribe_matriz(*mat): escribe por pantalla de texto de la NDS el contenido
 	de la matriz usando secuencias escape de posicionamiento en fila y
 	columna (\x1b['fila';'columna'H), donde 'fila' es una coordenada entre 0 y
@@ -47,9 +28,7 @@ int num_pun = 0;				// número de puntuaciones
 	de a la casilla superior izquierda;
 	además, se usa la secuencia escape para cambiar el color del texto
 	(\x1b['color'm), donde 'color' es un código de color de la librería NDS */
-=======
->>>>>>> prog4
-void escribe_matriz_h(char mat[][COLUMNS], int debug)
+void escribe_matriz(char mat[][COLUMNS])
 {
 	int i, j, value, color;
 
@@ -57,52 +36,28 @@ void escribe_matriz_h(char mat[][COLUMNS], int debug)
 	{
 		for (j = 0; j < COLUMNS; j++)	// para todas las columnas
 		{
-			value = mat[i][j];				// obtiene el valor del elemento (i,j)
-			
-			if ((value == 0) || ((value & 7) == 7))
-				color = 39;						// color del "hueco", bloc sòlid o buit (light white)
-			else if (value >= 16)
-				color = 38;						// el color de la gelatina doble (dark grey)
-			else if (value >= 8)
-				color = 37;						// el color de la gelatina simple (light grey)
-			else
-				color = 40 + value;				// el color normal (brillant)
-			printf("\x1b[%dm", color);
-			
-			printf("\x1b[%d;%dH", (i*2+DFIL), (j*2+1));	// posicionar cursor
-			
-			if (value == 255)
-				printf("_ ");					// sugerir
-			else if ((value == 7) && debug)
-				printf("# ");					// bloc sòlid en mode debug
-			else if ((value == 15) && debug)
-				printf(": ");					// hueco en mode debug
-			else if (value != 15)
-				printf("%d ", (value & 7));		// valor en mode normal
-			else
-				printf(" ");					// hueco en mode normal
+			value = mat[i][j];		// obtiene el valor del elemento (i,j)
+			if (value != 15)
+			{
+				if (value == 7)
+					color = 39;				// el color del bloque
+				else if (value > 16)
+					color = 38;				// el color de la gelatina doble
+				else if (value > 8)
+					color = 37;				// el color de la gelatina simple
+				else
+					color = 40+value;		// el color normal
+				printf("\x1b[%dm", color);
+				if (value == 255)
+					printf("\x1b[%d;%dH_ ",(i*2+DFIL),(j*2+1));
+				else
+					printf("\x1b[%d;%dH%d ",(i*2+DFIL),(j*2+1),(value % 8));
+			}
+			else printf("\x1b[%d;%dH  ",(i*2+DFIL),(j*2+1));
 		}
 	}
 }
 
-/* escribe_matriz(*mat): llama a escribe_matriz_h() con visualitzación normal
-*/
-void escribe_matriz(char mat[][COLUMNS])
-{
-	escribe_matriz_h(mat, 0);
-}
-
-/* escribe_matriz_debug(*mat): llama a escribe_matriz_h() con visualitzación
-	para depuración de errores
-*/
-void escribe_matriz_debug(char mat[][COLUMNS])
-{
-	escribe_matriz_h(mat, 1);
-}
-<<<<<<< HEAD
-=======
-
->>>>>>> prog4
 
 /* contar_gelatinas(*mat): calcula cuantas gelatinas quedan en la matriz de
 	juego, contando 1 para gelatines simples y 2 para gelatinas dobles */

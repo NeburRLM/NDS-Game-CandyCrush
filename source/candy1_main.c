@@ -170,7 +170,7 @@ int main(void)
 				printf("\x1b[6;20H           ");
 				printf("\x1b[8;20H           ");	// borra mensajes
 				
-				if (((points >= 0) && (gelees == 0)) || (movements == 0))
+				/*if (((points >= 0) && (gelees == 0)) || (movements == 0))
 				{
 					if (((points >= 0) && (gelees == 0))
 							&& (level < MAXLEVEL-1))
@@ -184,7 +184,7 @@ int main(void)
 					escribe_matriz(matrix);
 					change = 1;					// forzar nueva verificación
 				}								// de combinaciones
-				borra_puntuaciones();
+				borra_puntuaciones();*/
 			}
 			lapse = 0;
 		}
