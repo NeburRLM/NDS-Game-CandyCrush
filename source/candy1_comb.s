@@ -270,6 +270,21 @@ sugiere_combinacion:
 			beq .Lcpi1
 			sub r9, #1 @;miramos elemento de la izquierda
 			ldrb r10, [r4, r9]
+			cmp r10, #0
+			moveq r2, r12
+			beq .Lfinal2
+			cmp r10, #7
+			moveq r2, r12
+			beq .Lfinal2
+			cmp r10, #8
+			moveq r2, r12
+			beq .Lfinal2
+			cmp r10, #15
+			moveq r2, r12
+			beq .Lfinal2
+			cmp r10, #16
+			moveq r2, r12
+			beq .Lfinal2
 			strb r8, [r4, r9] @;intercambiamos posiciones
 			strb r10, [r4, r7]
 			sub r2, #1
@@ -278,7 +293,7 @@ sugiere_combinacion:
 			strb r10, [r4, r9]
 			mov r2, r12
 			cmp r0, #6
-			movne r12, #1
+			movne r12, #0
 			bne .LgenerarPos
 		.Lcpi1:
 			mov r9, r7 @;auxiliar posiciones
@@ -286,6 +301,21 @@ sugiere_combinacion:
 			beq .Lcpi2
 			add r9, #1	@;cogemos elemento de la derecha
 			ldrb r10, [r4, r9]
+			cmp r10, #0
+			moveq r2, r12
+			beq .Lfinal2
+			cmp r10, #7
+			moveq r2, r12
+			beq .Lfinal2
+			cmp r10, #8
+			moveq r2, r12
+			beq .Lfinal2
+			cmp r10, #15
+			moveq r2, r12
+			beq .Lfinal2
+			cmp r10, #16
+			moveq r2, r12
+			beq .Lfinal2
 			strb r8, [r4, r9]	@;intercambiamos posiciones
 			strb r10, [r4, r7]
 			add r2, #1
@@ -301,8 +331,23 @@ sugiere_combinacion:
 			cmp r1, #0
 			beq .Lcpi3
 			sub r1, #1 @;cogemos la posicion de arriba
-			mla r9, r1, r6, r2
+			sub r9, #9
 			ldrb r10, [r4, r9]
+			cmp r10, #0
+			moveq r1, r11
+			beq .Lfinal2
+			cmp r10, #7
+			moveq r1, r11
+			beq .Lfinal2
+			cmp r10, #8
+			moveq r1, r11
+			beq .Lfinal2
+			cmp r10, #15
+			moveq r1, r11
+			beq .Lfinal2
+			cmp r10, #16
+			moveq r1, r11
+			beq .Lfinal2
 			strb r8, [r4, r9]	@;intercambiamos posiciones
 			strb r10, [r4, r7]
 			bl detectar_orientacion @;devuelve el codigo de orientacion
@@ -317,8 +362,23 @@ sugiere_combinacion:
 			cmp r1, #ROWS-1
 			beq .Lfinal2
 			add r1, #1
-			mla r9, r11, r6, r2
+			add r9, #9
 			ldrb r10, [r4, r9]
+			cmp r10, #0
+			moveq r1, r11
+			beq .Lfinal2
+			cmp r10, #7
+			moveq r1, r11
+			beq .Lfinal2
+			cmp r10, #8
+			moveq r1, r11
+			beq .Lfinal2
+			cmp r10, #15
+			moveq r1, r11
+			beq .Lfinal2
+			cmp r10, #16
+			moveq r1, r11
+			beq .Lfinal2
 			strb r8, [r4, r9]	@;intercambiamos posiciones
 			strb r10, [r4, r7]
 			bl detectar_orientacion @;devuelve el codigo de orientacion
@@ -524,15 +584,15 @@ generar_posiciones:
 			strb r1, [r0, r5]
 			b .Lincompatible
 		.Lo2:
-			add r7, #1
+			sub r7, #1
 			add r5, #1
 			strb r7, [r0, r5]
 			sub r6, #1
 			add r5, #1
 			strb r6, [r0, r5]
+			sub r7, #1
 			add r5, #1
 			strb r7, [r0, r5]
-			sub r6, #1
 			add r5, #1
 			strb r6, [r0, r5]
 			b .Lincompatible

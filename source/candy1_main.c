@@ -71,19 +71,6 @@ int main(void)
 				escribe_matriz(matrix);
 				cont++;
 			}while(cont==20);
-			/*copia_mapa(matrixAux, level);
-			for(int i = 0; i<3;i++){
-				f = vector[i] - '0';
-				c = vector[i+1] - '0';
-				matrixAux[f][c] = -1 + '0';
-			}
-			do
-			{		
-				escribe_matriz(matrix);
-				retardo(100);
-				escribe_matriz(matrixAux);
-				cont++;
-			} while (cont==10);*/
 		}else
 			printf("\x1b[39m\x1b[3;0Hhay combinacion: NO");
 		retardo(5);
