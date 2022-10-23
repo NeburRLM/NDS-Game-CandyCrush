@@ -61,6 +61,7 @@ int main(void)
 	printf("\x1b[39m\x1b[2;0H puntos:");
 	printf("\x1b[38m\x1b[1;15H movimientos:");
 	printf("\x1b[37m\x1b[2;15H   gelatinas:");
+	printf("\x1b[37m\x1b[3;15H   combinacione: 0");
 	actualizar_contadores(15);
 
 	do							// bucle principal del juego
@@ -105,6 +106,8 @@ int main(void)
 				else change = 1;				// sino, revisar estado matriz
 			}
 			escribe_matriz(matrix);			// visualiza bajadas o eliminaciones
+			printf("\x1b[37m\x1b[3;15H   combinacione: ");
+			printf("\x1b[37m\x1b[3;15H   combinacione: %d",hay_combinacion(matrix));
 		}
 		else					//////	SECCIÓN DE JUGADAS	//////
 		{
@@ -133,6 +136,7 @@ int main(void)
 			{	swiWaitForVBlank();				// pantalla táctil
 				scanKeys();
 			}
+			
 		}
 		if (!falling)			//////	SECCIÓN DE DEPURACIÓN	//////
 		{
@@ -175,6 +179,7 @@ int main(void)
 				
 			}
 			lapse = 0;
+			
 		}
 		else if (lapse >= 192)	//////	SECCIÓN DE SUGERENCIAS	//////
 		{

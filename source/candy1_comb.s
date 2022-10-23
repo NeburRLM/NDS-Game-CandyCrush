@@ -116,7 +116,7 @@ hay_combinacion:
 		strb r5, [r8, r4] @;ponemos los valores en su sitio anterior
 		strb r7, [r8, r6]
 		sub r2, #1 @;volvemos a poner el numero de columnas inicial
-		b .Lfi
+		b .Lverticales
 		
 		.Lficomphor:
 		mov r0, #1
@@ -124,6 +124,7 @@ hay_combinacion:
 		strb r7, [r8, r6]
 		b .Lfinal
 		
+		.Lverticales:
 		cmp r1, #ROWS-1
 		bge .Lfi
 		mov r6, r1 @;auxiliar de la posicion matriz
