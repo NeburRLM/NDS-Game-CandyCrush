@@ -106,8 +106,7 @@ int main(void)
 				else change = 1;				// sino, revisar estado matriz
 			}
 			escribe_matriz(matrix);			// visualiza bajadas o eliminaciones
-			printf("\x1b[37m\x1b[3;15H   combinacione: ");
-			printf("\x1b[37m\x1b[3;15H   combinacione: %d",hay_combinacion(matrix));
+			
 		}
 		else					//////	SECCIÓN DE JUGADAS	//////
 		{
@@ -131,6 +130,7 @@ int main(void)
 					intercambia_posiciones(matrix, mX, mY, dX, dY);
 				}
 				escribe_matriz(matrix);	// muetra las eliminaciones o el retorno
+				
 			}
 			while (keysHeld() & KEY_TOUCH)		// esperar a liberar la
 			{	swiWaitForVBlank();				// pantalla táctil
@@ -153,12 +153,14 @@ int main(void)
 			}
 			lapse++;
 		}
+		printf("\x1b[37m\x1b[3;15H   combinacione: 0");
 		if (change)				//////	SECCIÓN CAMBIO DE NIVEL	//////
 		{
 			change = 0;
 			if (((points >= 0) && (gelees == 0))
-					|| (movements == 0) || !hay_combinacion(matrix))
+					|| (movements == 0) || (!(hay_combinacion(matrix))))
 			{
+				printf("\x1b[37m\x1b[3;15H   combinacione: 1");
 				if ((points >= 0) && (gelees == 0)){
 					printf("\x1b[39m\x1b[6;20H _SUPERADO_");
 					level++;				// incrementa nivel
